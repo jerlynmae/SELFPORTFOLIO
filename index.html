@@ -1,69 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HarvestHub • Seller Dashboard (Mock)</title>
+<style>
+  :root{
+    --bg:#0f172a;          /* slate-900 */
+    --panel:#111827;       /* gray-900 */
+    --muted:#334155;       /* slate-600 */
+    --card:#0b1224;        /* deep panel */
+    --text:#e5e7eb;        /* gray-200 */
+    --sub:#9ca3af;         /* gray-400 */
+    --brand:#22c55e;       /* green-500 */
+    --brand-2:#16a34a;     /* green-600 */
+    --warn:#f59e0b;        /* amber-500 */
+    --danger:#ef4444;      /* red-500 */
+    --accent:#38bdf8;      /* sky-400 */
+    --chip:#1f2937;        /* gray-800 */
+    --border:#1e293b;      /* slate-800 */
+    --ok:#10b981;          /* emerald-500 */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:linear-gradient(180deg,var(--bg),#0b1220);
+    color:var(--text);font:14px/1.4 system-ui,Segoe UI,Roboto,Inter,Arial;
+    display:flex;min-height:100vh;overflow:hidden;
+  }
+  /* Sidebar */
+  .side{
+    width:260px; background:rgba(255,255,255,.03);
+    backdrop-filter: blur(8px);
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;gap:16px;padding:18px 16px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;padding:6px 8px;
+  }
+  .logo{
+    width:36px;height:36px;border-radius:10px;
+    background: conic-gradient(from 230deg, var(--brand), var(--accent), var(--warn));
+    box-shadow:0 0 0 3px rgba(34,197,94,.18), 0 6px 18px rgba(0,0,0,.35);
+  }
+  .brand h1{font-size:16px;margin:0;letter-spacing:.3px}
+  .nav .h{margin:14px 8px 6px;color:var(--sub);font-weight:600;text-transform:uppercase;font-size:11px}
+  .nav a{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--text);
+    border:1px solid transparent;
+  }
+  .nav a:hover{background:rgba(255,255,255,.04);border-color:var(--border)}
+  .nav a.active{background:rgba(34,197,94,.10);border-color:#1f8f4f}
+  .spacer{flex:1}
+  .badge{background:var(--chip);padding:2px 8px;border-radius:999px;font-size:11px;color:var(--sub);border:1px solid var(--border)}
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .top{
+    display:flex;align-items:center;gap:14px;justify-content:space-between;
+    padding:16px 20px;border-bottom:1px solid var(--border)
+  }
+  .search{
+    display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+    padding:8px 10px;border-radius:10px;min-width:280px;flex:1;max-width:520px
+  }
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text)}
+  .pill{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:var(--card);color:var(--sub)}
+  .user{display:flex;align-items:center;gap:10px}
+  .user .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#64748b)}
+  .content{display:grid;grid-template-columns:1.7fr .9fr;gap:18px;padding:18px;min-height:0;overflow:hidden}
+  .card{
+    background:rgba(255,255,255,.03);border:1px solid var(--border);
+    border-radius:14px;padding:14px;min-height:0;
+  }
+  .card h3{margin:0 0 8px;font-size:15px}
+  /* Tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tab{
+    border:1px solid var(--border);background:var(--chip);color:var(--text);
+    padding:8px 10px;border-radius:9px;cursor:pointer;font-weight:600
+  }
+  .tab.active{background:rgba(56,189,248,.12);border-color:#1e90c2}
+  /* Orders table */
+  .table{width:100%;border-collapse:collapse;font-size:13px}
+  .table th,.table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
+  .table th{color:var(--sub);font-weight:600;text-align:left}
+  .status{padding:3px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:var(--chip);color:#cbd5e1}
+  .status.new{background:rgba(56,189,248,.12)}
+  .status.ship{background:rgba(245,158,11,.12)}
+  .status.done{background:rgba(16,185,129,.12)}
+  .status.cancel{background:rgba(239,68,68,.12)}
+  .actions button{
+    font-size:12px;padding:6px 10px;margin:2px;border-radius:8px;border:1px solid var(--border);
+    background:var(--panel);color:var(--text);cursor:pointer
+  }
+  .actions button.primary{background:var(--brand);border-color:#15803d;color:#06240f}
+  .actions button.warn{background:var(--warn);border-color:#a16207;color:#1f1300}
+  .actions button.ghost{background:var(--chip)}
+  .actions button.danger{background:var(--danger);border-color:#7f1d1d}
+  /* Right column: inventory + notifications */
+  .list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 210px);overflow:auto;padding-right:4px}
+  .row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    border:1px solid var(--border);background:var(--card);padding:10px;border-radius:10px
+  }
+  .row .meta{display:flex;align-items:center;gap:10px}
+  .thumb{width:38px;height:38px;border-radius:9px;background:#0f172a;border:1px solid var(--border)}
+  .qty{font-weight:700}
+  .small{font-size:12px;color:var(--sub)}
+  .ok{color:var(--ok)} .warnc{color:var(--warn)} .bad{color:var(--danger)}
+  /* Modal */
+  .modal{
+    position:fixed;inset:0;background:rgba(2,6,23,.7);display:none;align-items:center;justify-content:center;
+    padding:20px;z-index:30
+  }
+  .modal .box{max-width:780px;width:100%;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .modal .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .close{background:var(--chip);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;cursor:pointer}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .muted{color:var(--sub)}
+  @media (max-width: 1024px){
+    .content{grid-template-columns:1fr}
+    .side{display:none}
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 class="self-portfolio">Self Portfolio</h1>
-            <img src="images/maemae.jpg" alt="Your Image" class="profile-image">
-            <h2 class="name"><a href="https://www.facebook.com/jm.etnagam?mibextid=rS40aB7S9Ucbxw6v" target="_blank">Jerlyn Mae L. Magante</a></h2>
-            <h3 class="self-introduction">Self Introduction: </h3>
-            <p class="introduction-text"> &emsp; &emsp; Hello, I'm Jerlyn Mae Magante, a 19-year-old from Laon, Mogpog Marinduque. I have interests, including music, playing instruments, composing a song, playing online games and watching some anime. I'm pursuing my current course, Bachelor of Science and Information technology for achieving my goals.  </p>
-
-            <h3 class="educational-background">Educational Background: </h3>
-            <table class="education-table">
-                <thead>
-                    <tr>
-                        <th>Level</th>
-                        <th>Name of School</th>
-                        <th>Basic Education/Degree/Course</th>
-                        <th>Period of Attendance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td> Elementary</td>
-                        <td> Laon Elementary School</td>
-                        <td> Primary Education</td>
-                        <td> 2009-2015</td>
-                    </tr>
-                    <tr>
-                        <td> High School</td>
-                        <td> Mogpog National Comprehensive High School</td>
-                        <td> Secondary Education</td>
-                        <td> 2015-2020</td>
-                    </tr>
-                    <tr>
-                        <td> College</td>
-                        <td> Marinduque State College</td>
-                        <td> Bachelor of Science and Information Technology</td>
-                        <td> 2022-2026</td>
-
-                    </tr>
-                </tbody>
-            </table>
-            <h3 class="expertise">Expertise: </h3>
-            <ul class="expertise-list">
-                <li> make a simple website </li>
-                <li> create simple game</li>
-                <li> make python codes</li>
-            </ul>
-            <h3 class="it-background">Background on Information Technology:</h3>
-            <p class="it-background-text"> &emsp; &emsp; Information Technology is about using computers and technology to handle information. It's everywhere in our lives, from phones to computers to the internet. IT helps us do things faster and better. In IT, we use different tools and software to solve problems and make things work smoothly. It's always changing and getting better, with new things coming out all the time. IT helps businesses run smoothly and makes life easier for everyone. Learning about IT is important because it helps us understand how technology works and how to use it to make things better. IT is all about using technology to make life easier and solve problems. It's important to keep learning about IT because technology keeps changing and improving. </p>
-            <h3 class="applications-used">Applications Used in Studying: </h3>
-            <ol class="applications-list">
-                <li> Sublime</li>
-                <li> Visual Studio Code</li>
-                <li> Notepad </li>
-                <li> Microsoft Word</li>
-                
-            </ol>
-        </header>
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <h1>HarvestHub Seller</h1>
     </div>
+    <nav class="nav">
+      <div class="h">Main</div>
+      <a class="active" href="#"><span>Orders</span><span class="badge">5 New</span></a>
+      <a href="#"><span>Inventory</span></a>
+      <a href="#"><span>Messages</span></a>
+      <a href="#"><span>Sales & Reports</span></a>
+      <div class="h">Account</div>
+      <a href="#"><span>Store Settings</span></a>
+      <a href="#"><span>Payouts</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="small">v0.1 mock • for demo only</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="top">
+      <div class="search">
+        🔎 <input id="search" placeholder="Search orders or buyers…" />
+        <span class="pill">Filter ▾</span>
+      </div>
+      <div class="user">
+        <span class="pill">Notifications • 3</span>
+        <div class="avatar" title="You"></div>
+      </div>
+    </header>
+
+    <section class="content">
+      <!-- LEFT: ORDERS -->
+      <section class="card">
+        <h3>Orders</h3>
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-filter="all">All</button>
+          <button class="tab" data-filter="new">New</button>
+          <button class="tab" data-filter="toship">To Ship</button>
+          <button class="tab" data-filter="intransit">In Transit</button>
+          <button class="tab" data-filter="delivered">Delivered</button>
+          <button class="tab" data-filter="cancelled">Cancelled</button>
+        </div>
+
+        <table class="table" id="orders">
+          <thead>
+            <tr>
+              <th>Order # / Date</th>
+              <th>Buyer / Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Sample orders -->
+            <tr data-status="new" data-items='[{"sku":"Tomato (kg)","qty":6},{"sku":"Eggplant (kg)","qty":2}]' data-buyer="Ana Reyes" data-order="HH-24001">
+              <td><strong>HH-24001</strong><div class="small">Today • 10:21 AM</div></td>
+              <td>Ana Reyes<div class="small">Tomato (kg) × 6, Eggplant (kg) × 2</div></td>
+              <td>₱ 720.00</td>
+              <td>COD</td>
+              <td><span class="status new">New</span></td>
+              <td class="actions">
+                <button class="primary" onclick="confirmOrder(this)">Confirm</button>
+                <button class="danger" onclick="rejectOrder(this)">Reject</button>
+                <button class="ghost" onclick="openDetail(this)">View</button>
+                <button class="ghost">Message</button>
+              </td>
+            </tr>
+
+            <tr data-status="new" data-items='[{"sku":"Okra (kg)","qty":3}]' data-buyer="Mark Dizon" data-order="HH-24002">
+              <td><strong>HH-24002</strong><div class="small">Today • 09:51 AM</div></td>
+              <td>Mark Dizon<div class="small">Okra (kg) × 3</div></td>
+              <td>₱ 210.00</td>
+              <td>GCash</td>
+              <td><span class="status new">New</span></td>
+              <td class="actions">
+                <button class="primary" onclick="confirmOrder(this)">Confirm</button>
+                <button class="danger" onclick="rejectOrder(this)">Reject</button>
+                <button class="ghost" onclick="openDetail(this)">View</button>
+                <button class="ghost">Message</button>
+              </td>
+            </tr>
+
+            <tr data-status="toship" data-items='[{"sku":"Banana (dozen)","qty":4}]' data-buyer="Lia Santos" data-order="HH-23998">
+              <td><strong>HH-23998</strong><div class="small">Yesterday • 5:33 PM</div></td>
+              <td>Lia Santos<div class="small">Banana (dozen) × 4</div></td>
+              <td>₱ 560.00</td>
+              <td>COD</td>
+              <td><span class="status ship">To Ship</span></td>
+              <td class="actions">
+                <button class="primary" onclick="shipOrder(this)">Mark as Shipped</button>
+                <button class="ghost" onclick="openDetail(this)">View</button>
+                <button class="ghost">Print</button>
+              </td>
+            </tr>
+
+            <tr data-status="intransit" data-items='[{"sku":"Pechay (kg)","qty":5}]' data-buyer="Joem Garcia" data-order="HH-23985">
+              <td><strong>HH-23985</strong><div class="small">2 days ago</div></td>
+              <td>Joem Garcia<div class="small">Pechay (kg) × 5</div></td>
+              <td>₱ 300.00</td>
+              <td>GCash</td>
+              <td><span class="status ship">In Transit</span></td>
+              <td class="actions">
+                <button class="primary" onclick="deliverOrder(this)">Mark Delivered</button>
+                <button class="ghost" onclick="openDetail(this)">View</button>
+              </td>
+            </tr>
+
+            <tr data-status="delivered" data-items='[{"sku":"Calamansi (kg)","qty":2}]' data-buyer="Paolo Cruz" data-order="HH-23940">
+              <td><strong>HH-23940</strong><div class="small">Aug 10 • 1:10 PM</div></td>
+              <td>Paolo Cruz<div class="small">Calamansi (kg) × 2</div></td>
+              <td>₱ 120.00</td>
+              <td>COD</td>
+              <td><span class="status done">Delivered</span></td>
+              <td class="actions">
+                <button class="ghost" onclick="openDetail(this)">View</button>
+                <button class="warn">Issue Refund</button>
+              </td>
+            </tr>
+
+            <tr data-status="cancelled" data-items='[{"sku":"Carrots (kg)","qty":2}]' data-buyer="Mia Valdez" data-order="HH-23910">
+              <td><strong>HH-23910</strong><div class="small">Aug 7 • 3:40 PM</div></td>
+              <td>Mia Valdez<div class="small">Carrots (kg) × 2</div></td>
+              <td>₱ 160.00</td>
+              <td>GCash</td>
+              <td><span class="status cancel">Cancelled</span></td>
+              <td class="actions">
+                <button class="ghost" onclick="openDetail(this)">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- RIGHT: INVENTORY + NOTIFS -->
+      <section class="card">
+        <h3>Inventory Snapshot</h3>
+        <div class="list" id="inventory">
+          <!-- Items (name • qty). JS will update numbers on confirm -->
+          <div class="row" data-sku="Tomato (kg)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Tomato (kg)</div><div class="small">SKU: VEG-TMT-001</div></div>
+            </div>
+            <div><span class="qty" data-qty="38">38</span> <span class="small">in stock</span></div>
+          </div>
+          <div class="row" data-sku="Eggplant (kg)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Eggplant (kg)</div><div class="small">SKU: VEG-EGG-002</div></div>
+            </div>
+            <div><span class="qty" data-qty="21">21</span> <span class="small">in stock</span></div>
+          </div>
+          <div class="row" data-sku="Okra (kg)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Okra (kg)</div><div class="small">SKU: VEG-OKR-003</div></div>
+            </div>
+            <div><span class="qty" data-qty="12">12</span> <span class="small">in stock</span></div>
+          </div>
+          <div class="row" data-sku="Banana (dozen)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Banana (dozen)</div><div class="small">SKU: FRU-BAN-004</div></div>
+            </div>
+            <div><span class="qty" data-qty="7">7</span> <span class="small">in stock</span></div>
+          </div>
+          <div class="row" data-sku="Pechay (kg)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Pechay (kg)</div><div class="small">SKU: VEG-PCH-005</div></div>
+            </div>
+            <div><span class="qty" data-qty="3">3</span> <span class="small bad">low</span></div>
+          </div>
+          <div class="row" data-sku="Calamansi (kg)">
+            <div class="meta"><div class="thumb"></div>
+              <div><div>Calamansi (kg)</div><div class="small">SKU: FRU-CAL-006</div></div>
+            </div>
+            <div><span class="qty" data-qty="19">19</span> <span class="small">in stock</span></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px">Notifications</h3>
+        <div class="list">
+          <div class="row"><div>New order <strong>HH-24001</strong> from <em>Ana Reyes</em></div><div class="small">2m ago</div></div>
+          <div class="row"><div>Inventory low: <strong>Pechay</strong></div><div class="small warnc">Restock</div></div>
+          <div class="row"><div>Payout scheduled: ₱1,420.00</div><div class="small ok">Tomorrow</div></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- ORDER DETAIL MODAL -->
+  <div class="modal" id="modal">
+    <div class="box">
+      <div class="head">
+        <h3 id="mTitle">Order</h3>
+        <button class="close" onclick="closeDetail()">Close</button>
+      </div>
+      <div class="grid-2">
+        <div>
+          <h4>Buyer</h4>
+          <div id="mBuyer" class="muted"></div>
+          <h4 style="margin-top:10px">Items</h4>
+          <ul id="mItems"></ul>
+        </div>
+        <div>
+          <h4>Actions</h4>
+          <div class="small muted">Use the main table buttons to confirm, ship, deliver, or cancel.</div>
+          <h4 style="margin-top:10px">Notes</h4>
+          <textarea style="width:100%;min-height:120px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px" placeholder="Seller notes…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const tabs = document.getElementById('tabs');
+  const tbody = document.querySelector('#orders tbody');
+  const search = document.getElementById('search');
+
+  // Tab filter
+  tabs.addEventListener('click', e=>{
+    if(e.target.classList.contains('tab')){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      e.target.classList.add('active');
+      filterTable();
+    }
+  });
+
+  // Search filter
+  search.addEventListener('input', filterTable);
+  function filterTable(){
+    const f = document.querySelector('.tab.active').dataset.filter;
+    const q = search.value.trim().toLowerCase();
+    [...tbody.rows].forEach(r=>{
+      const status = r.dataset.status;
+      const text = r.innerText.toLowerCase();
+      const passStatus = (f==='all') ||
+                         (f==='new' && status==='new') ||
+                         (f==='toship' && status==='toship') ||
+                         (f==='intransit' && status==='intransit') ||
+                         (f==='delivered' && status==='delivered') ||
+                         (f==='cancelled' && status==='cancelled');
+      const passSearch = q==='' || text.includes(q);
+      r.style.display = (passStatus && passSearch) ? '' : 'none';
+    });
+  }
+
+  // Inventory helpers
+  function adjustInventory(items, sign){
+    items.forEach(it=>{
+      const row = document.querySelector(`.row[data-sku="${it.sku}"] .qty`);
+      if(!row) return;
+      let current = parseInt(row.dataset.qty,10);
+      current += sign * (it.qty * -1); // sign=+1 for confirm (subtract), -1 for reject (add back)
+      current = Math.max(0, current);
+      row.dataset.qty = current;
+      row.textContent = current;
+    });
+  }
+
+  function setRowStatus(tr, newStatus, label, cls){
+    tr.dataset.status = newStatus;
+    const badge = tr.querySelector('.status');
+    badge.textContent = label;
+    badge.className = `status ${cls}`;
+    filterTable();
+  }
+
+  // Actions
+  function confirmOrder(btn){
+    const tr = btn.closest('tr');
+    const items = JSON.parse(tr.dataset.items);
+    adjustInventory(items, +1);              // subtract from stock
+    setRowStatus(tr,'toship','To Ship','ship');
+  }
+  function rejectOrder(btn){
+    const tr = btn.closest('tr');
+    const items = JSON.parse(tr.dataset.items);
+    // If previously reduced, add back; here it's still new so no change. (Kept for demo symmetry)
+    setRowStatus(tr,'cancelled','Cancelled','cancel');
+  }
+  function shipOrder(btn){
+    const tr = btn.closest('tr');
+    setRowStatus(tr,'intransit','In Transit','ship');
+  }
+  function deliverOrder(btn){
+    const tr = btn.closest('tr');
+    setRowStatus(tr,'delivered','Delivered','done');
+  }
+
+  // Modal
+  const modal = document.getElementById('modal');
+  function openDetail(btn){
+    const tr = btn.closest('tr');
+    document.getElementById('mTitle').textContent = `Order ${tr.dataset.order}`;
+    document.getElementById('mBuyer').textContent = tr.dataset.buyer;
+    const ul = document.getElementById('mItems'); ul.innerHTML='';
+    JSON.parse(tr.dataset.items).forEach(i=>{
+      const li = document.createElement('li');
+      li.textContent = `${i.sku} × ${i.qty}`;
+      ul.appendChild(li);
+    });
+    modal.style.display='flex';
+  }
+  function closeDetail(){ modal.style.display='none'; }
+
+  // Init
+  filterTable();
+</script>
 </body>
 </html>
